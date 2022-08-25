@@ -1,0 +1,5 @@
+{
+	"apiBaseURL": "https://website.com/api/",
+	"apiToken": "apitoken",
+	"allowedGroupIds": [ "123" ]
+}
