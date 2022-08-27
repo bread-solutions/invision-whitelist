@@ -22,3 +22,7 @@ Once on the page prompting you to create a REST API key, fill out all required f
 
 ## Further Help
 If you're looking for further help join the [Bread Solutions](https://discord.gg/JckpxefJzu) Discord server
+
+
+## Contributing
+Please, feel free to contribute. I will try to review PRs as often as possible.
