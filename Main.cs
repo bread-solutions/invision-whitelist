@@ -14,6 +14,8 @@ namespace invision_whitelist
         string communityURL;
         string apiKey;
         List<string> groupIds = new List<string>();
+        string profileFieldValue;
+        string profileFieldSubNode;
         HashSet<string> whitelistedHexes { get; set; }
         public Main()
         {
@@ -50,6 +52,8 @@ namespace invision_whitelist
             if (config.allowedGroupIds is null || config.apiToken is null || config.apiBaseURL is null) return;
             communityURL = config.apiBaseURL;
             apiKey = config.apiToken;
+            profileFieldValue = config.profileFieldValue;
+            profileFieldSubNode = config.profileFieldSubNode;
             foreach (string groupId in config.allowedGroupIds)
             {
                 groupIds.Add(groupId);
@@ -112,10 +116,10 @@ namespace invision_whitelist
                     {
                         foreach (var customField in apiUser.customFields)
                         {
-                            if (customField.Value.name == "Server Information") {
+                            if (customField.Value.name.ToLower() == profileFieldValue.ToLower()) {
                                 foreach (var field in customField.Value.fields)
                                 {
-                                    if (field.Value.name.ToLower().StartsWith("steam hex"))
+                                    if (field.Value.name.ToLower().StartsWith(profileFieldSubNode.ToLower()))
                                     {
                                         string steamHex = field.Value.value;
                                         if(!(steamHex is null))

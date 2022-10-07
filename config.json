@@ -1,5 +1,7 @@
 {
 	"apiBaseURL": "https://website.com/api/",
 	"apiToken": "apitoken",
-	"allowedGroupIds": [ "123" ]
+	"allowedGroupIds": [ "123" ],
+	"profileFieldName": "Server Information",
+	"ProfileFieldSubNode": "Steam Hex"
 }

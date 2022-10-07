@@ -38,8 +38,13 @@ namespace invision_whitelist
 
     internal class WhitelistConfig
     {
+        
         public string apiBaseURL { get; set; }
         public string apiToken { get; set; }
         public string[] allowedGroupIds { get; set; }
+
+        public string profileFieldValue { get; set; }
+
+        public string profileFieldSubNode { get; set; }
     }
 }
