@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("N/A")]
 [assembly: AssemblyProduct("invision_whitelist")]
-[assembly: AssemblyCopyright("Copyright © Kyler Gonzales, 2020")]
+[assembly: AssemblyCopyright("Copyright © Bread Solutions, 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
