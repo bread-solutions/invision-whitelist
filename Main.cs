@@ -20,17 +20,17 @@ namespace invision_whitelist
         public Main()
         {
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
-            EventHandlers["onResourceStart"] += new Action<string>(handleResourceStart); 
-            EventHandlers["playerConnecting"] += new Action<Player, string, dynamic, dynamic>(handleConnection);
+            EventHandlers["onResourceStart"] += new Action<string>(HandleResourceStart); 
+            EventHandlers["playerConnecting"] += new Action<Player, string, dynamic, dynamic>(HandleConnection);
             RegisterCommand("updatewhitelist", new Action<int>((source) =>
             {
                 if(source == 0) {
                     Debug.WriteLine("[Invision Whitelist] Updating whitelist...");
                 }
-                updateWhitelistedHexes();
+                UpdateWhitelistedHexes();
             }), true);
 
-            loadConfig();
+            LoadConfig();
             if(communityURL is null || apiKey is null || groupIds.Count == 0)
             {
                 Debug.WriteLine("^1No config variables set! Whitelist won't operate.^0");
@@ -39,12 +39,12 @@ namespace invision_whitelist
 
             Timer updateTimer = new Timer(TimeSpan.FromHours(4).TotalMilliseconds);
             updateTimer.AutoReset = true;
-            updateTimer.Elapsed += onTimerTimeout;
+            updateTimer.Elapsed += OnTimerTimeout;
             updateTimer.Start();
             
         }
 
-        private void loadConfig()
+        private void LoadConfig()
         {
             string rawFileContent = LoadResourceFile(GetCurrentResourceName(), "config.json");
             if (rawFileContent is null) return;
@@ -62,7 +62,7 @@ namespace invision_whitelist
             return;
         }
         
-        private async void updateWhitelistedHexes()
+        private async void UpdateWhitelistedHexes()
         {
             HashSet<ApiUser> apiUsers = new HashSet<ApiUser>();
             List<string> steamHexes = new List<string>();
@@ -112,7 +112,7 @@ namespace invision_whitelist
                 // Iterate through every api user and add their steam hex to the list of steam hexes
                 foreach(var apiUser in apiUsers)
                 {
-                    if (checkApiUserGroup(apiUser))
+                    if (CheckApiUserGroup(apiUser))
                     {
                         foreach (var customField in apiUser.customFields)
                         {
@@ -142,7 +142,7 @@ namespace invision_whitelist
         /**
          * Checks if the user is in the allowed group
          */
-        private bool checkApiUserGroup(ApiUser apiUser)
+        private bool CheckApiUserGroup(ApiUser apiUser)
         {
             if (groupIds.Contains(apiUser.primaryGroup.id.ToString())) return true;
             foreach(ApiGroup ApiGroup in apiUser.secondaryGroups)
@@ -151,11 +151,11 @@ namespace invision_whitelist
             }
             return false;
         }
-        private void handleResourceStart(string resName)
+        private void HandleResourceStart(string resName)
         {
-            if (resName == GetCurrentResourceName()) { Task.Factory.StartNew(() => updateWhitelistedHexes()); } else return;
+            if (resName == GetCurrentResourceName()) { Task.Factory.StartNew(() => UpdateWhitelistedHexes()); } else return;
         }
-        private async void handleConnection([FromSource] Player player, string plrName, dynamic _kickReason, dynamic deferrals)
+        private async void HandleConnection([FromSource] Player player, string plrName, dynamic _kickReason, dynamic deferrals)
         {
             // defer the user
             deferrals.defer();
@@ -182,9 +182,9 @@ namespace invision_whitelist
 
             }
         }
-        private void onTimerTimeout(object _source, ElapsedEventArgs _e)
+        private void OnTimerTimeout(object _source, ElapsedEventArgs _e)
         {
-            Task.Factory.StartNew(() => updateWhitelistedHexes());
+            Task.Factory.StartNew(() => UpdateWhitelistedHexes());
         }
     }
 }
