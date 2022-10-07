@@ -1,7 +1,7 @@
 fx_version 'cerulean'
 game 'gta5'
 
-author 'Kyler Gonzales'
+author 'Racc'
 description 'An attempt to work with the Invision Community REST API to setup whitelisting'
 version '1.0.0'
 
