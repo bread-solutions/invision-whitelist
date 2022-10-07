@@ -28,7 +28,7 @@ namespace invision_whitelist
                     Debug.WriteLine("[Invision Whitelist] Updating whitelist...");
                 }
                 updateWhitelistedHexes();
-            }), false);
+            }), true);
 
             loadConfig();
             if(communityURL is null || apiKey is null || groupIds.Count == 0)
