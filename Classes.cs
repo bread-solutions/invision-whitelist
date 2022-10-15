@@ -43,7 +43,7 @@ namespace invision_whitelist
         public string apiToken { get; set; }
         public string[] allowedGroupIds { get; set; }
 
-        public string profileFieldValue { get; set; }
+        public string profileFieldName { get; set; }
 
         public string profileFieldSubNode { get; set; }
     }

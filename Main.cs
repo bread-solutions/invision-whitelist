@@ -14,24 +14,25 @@ namespace invision_whitelist
         string communityURL;
         string apiKey;
         List<string> groupIds = new List<string>();
-        string profileFieldValue;
+        string profileFieldName;
         string profileFieldSubNode;
         HashSet<string> whitelistedHexes { get; set; }
         public Main()
         {
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
-            EventHandlers["onResourceStart"] += new Action<string>(HandleResourceStart); 
+            EventHandlers["onResourceStart"] += new Action<string>(HandleResourceStart);
             EventHandlers["playerConnecting"] += new Action<Player, string, dynamic, dynamic>(HandleConnection);
             RegisterCommand("updatewhitelist", new Action<int>((source) =>
             {
-                if(source == 0) {
+                if (source == 0)
+                {
                     Debug.WriteLine("[Invision Whitelist] Updating whitelist...");
                 }
                 UpdateWhitelistedHexes();
             }), true);
 
             LoadConfig();
-            if(communityURL is null || apiKey is null || groupIds.Count == 0)
+            if (communityURL is null || apiKey is null || groupIds.Count == 0)
             {
                 Debug.WriteLine("^1No config variables set! Whitelist won't operate.^0");
                 throw new Exception("NO_CONFIG");
@@ -41,7 +42,7 @@ namespace invision_whitelist
             updateTimer.AutoReset = true;
             updateTimer.Elapsed += OnTimerTimeout;
             updateTimer.Start();
-            
+
         }
 
         private void LoadConfig()
@@ -49,10 +50,11 @@ namespace invision_whitelist
             string rawFileContent = LoadResourceFile(GetCurrentResourceName(), "config.json");
             if (rawFileContent is null) return;
             WhitelistConfig config = JsonConvert.DeserializeObject<WhitelistConfig>(rawFileContent);
-            if (config.allowedGroupIds is null || config.apiToken is null || config.apiBaseURL is null) return;
+            Debug.WriteLine(config.ToString());
+            if (config.allowedGroupIds is null || config.apiToken is null || config.apiBaseURL is null || config.profileFieldName is null || config.profileFieldSubNode is null) return;
             communityURL = config.apiBaseURL;
             apiKey = config.apiToken;
-            profileFieldValue = config.profileFieldValue;
+            profileFieldName = config.profileFieldName;
             profileFieldSubNode = config.profileFieldSubNode;
             foreach (string groupId in config.allowedGroupIds)
             {
@@ -61,7 +63,7 @@ namespace invision_whitelist
             Debug.WriteLine("^4Successfully loaded config.^0");
             return;
         }
-        
+
         private async void UpdateWhitelistedHexes()
         {
             HashSet<ApiUser> apiUsers = new HashSet<ApiUser>();
@@ -73,30 +75,31 @@ namespace invision_whitelist
                 RestRequest restRequest = (RestRequest)new RestRequest($"core/members?group={groupIds[i]}&perPage=500&key={apiKey}", Method.GET, DataFormat.Json).AddHeader("User-Agent", "WorldwideRP/1.0");
                 RestResponse restResponse = (RestResponse)await restClient.ExecuteAsync(restRequest);
 
-                if(restResponse.StatusCode == (HttpStatusCode)200)
+                if (restResponse.StatusCode == (HttpStatusCode)200)
                 {
                     // Convert the response to a usable object so we can read from it
                     var formattedResponse = JsonConvert.DeserializeObject<ApiResponse>(restResponse.Content);
                     foreach (var apiUser in formattedResponse.results)
-                    { 
+                    {
                         // Add the user to the list of users to be whitelisted
                         apiUsers.Add(apiUser);
                     }
-                    for (int z = 2; z <= formattedResponse.totalPages; z ++)
+                    for (int z = 2; z <= formattedResponse.totalPages; z++)
                     {
                         // Nested request to get the rest of the users in the group
                         RestRequest InternalRestRequest = (RestRequest)new RestRequest($"core/members?group={groupIds[i]}&perPage=500&page={z}&key={apiKey}", Method.GET, DataFormat.Json).AddHeader("User-Agent", "WorldwideRP/1.0");
                         RestResponse InternalRestResponse = (RestResponse)await restClient.ExecuteAsync(InternalRestRequest);
 
-                        if(InternalRestResponse.StatusCode == (HttpStatusCode)200)
+                        if (InternalRestResponse.StatusCode == (HttpStatusCode)200)
                         {
                             var InternalFormattedResponse = JsonConvert.DeserializeObject<ApiResponse>(InternalRestResponse.Content);
-                            foreach( var apiUser in InternalFormattedResponse.results)
+                            foreach (var apiUser in InternalFormattedResponse.results)
                             {
                                 // Add the rest of the users to the list of users to be whitelisted
                                 apiUsers.Add(apiUser);
                             }
-                        } else
+                        }
+                        else
                         {
                             // If the request fails, log the error and continue on
                             Debug.WriteLine($"^1Recieved a non 200 response code when trying to query the IPS API for some whitelisted users! ^7Status: {InternalRestResponse.StatusCode} \n Response Content: {InternalRestResponse.Content}^0");
@@ -104,31 +107,41 @@ namespace invision_whitelist
                         }
                     }
                     Debug.WriteLine($"^4Retrieved {apiUsers.Count} users so far from the API.");
-                } else
+                }
+                else
                 {
                     Debug.WriteLine($"^1Recieved a non 200 response code when trying to query the IPS API for some whitelisted users! ^7Status: {restResponse.StatusCode} \n Response Content: {restResponse.Content}^0");
                     Debug.WriteLine(restResponse.ErrorMessage);
                 }
                 // Iterate through every api user and add their steam hex to the list of steam hexes
-                foreach(var apiUser in apiUsers)
+                foreach (var apiUser in apiUsers)
                 {
                     if (CheckApiUserGroup(apiUser))
                     {
-                        foreach (var customField in apiUser.customFields)
+                        if (!(apiUser.customFields is null))
                         {
-                            if (customField.Value.name.ToLower() == profileFieldValue.ToLower()) {
-                                foreach (var field in customField.Value.fields)
+                            foreach (var customField in apiUser.customFields)
+                            {
+                                if (customField.Value.name.ToLower() == profileFieldName.ToLower())
                                 {
-                                    if (field.Value.name.ToLower().StartsWith(profileFieldSubNode.ToLower()))
+                                    foreach (var field in customField.Value.fields)
                                     {
-                                        string steamHex = field.Value.value;
-                                        if(!(steamHex is null))
+                                        if (field.Value.name.ToLower().StartsWith(profileFieldSubNode.ToLower()))
                                         {
-                                            steamHexes.Add(field.Value.value.ToLower().Replace("steam:",""));
+                                            string steamHex = field.Value.value;
+                                            if (!(steamHex is null))
+                                            {
+                                                steamHexes.Add(field.Value.value.ToLower().Replace("steam:", ""));
+                                            }
                                         }
                                     }
                                 }
                             }
+                        }
+                        else
+                        {
+                            Debug.WriteLine("^1 There are no custom fields set on the IPS Suite");
+                            return;
                         }
                     }
                 }
@@ -145,9 +158,9 @@ namespace invision_whitelist
         private bool CheckApiUserGroup(ApiUser apiUser)
         {
             if (groupIds.Contains(apiUser.primaryGroup.id.ToString())) return true;
-            foreach(ApiGroup ApiGroup in apiUser.secondaryGroups)
+            foreach (ApiGroup ApiGroup in apiUser.secondaryGroups)
             {
-                if(groupIds.Contains(ApiGroup.id.ToString())) return true;
+                if (groupIds.Contains(ApiGroup.id.ToString())) return true;
             }
             return false;
         }
@@ -163,7 +176,7 @@ namespace invision_whitelist
             deferrals.update("Hold on. We're making sure you're allowed here.");
             Debug.WriteLine($"^4Connecting user: ^7{plrName}^3 (Steam: {player.Identifiers["steam"] ?? "N/A"}, Discord: {player.Identifiers["discord"] ?? "N/A"}, IP: {player.Identifiers["ip"] ?? "N/A"})^0");
             //make sure they have a discord id & steam hex
-            if(player.Identifiers["steam"] is null || player.Identifiers["discord"] is null)
+            if (player.Identifiers["steam"] is null || player.Identifiers["discord"] is null)
             {
                 deferrals.done($"We failed to find your {((player.Identifiers["steam"] is null && player.Identifiers["discord"] is null) ? "Steam Hex and Discord Id" : player.Identifiers["steam"] is null ? "Steam Hex" : "Discord Id")}. Make sure that application is open.");
                 Debug.WriteLine($"^7{plrName} rejected. ^3They didn't have either Steam or Discord open.^0");
@@ -174,7 +187,8 @@ namespace invision_whitelist
             {
                 deferrals.done();
                 Debug.WriteLine($"^7{plrName} authenticated. ^2Allowing connection.^0");
-            } else
+            }
+            else
             {
                 deferrals.done("You're not whitelisted!");
                 Debug.WriteLine($"^7{plrName} didn't authenticate. ^1Terminating connection.^0");
