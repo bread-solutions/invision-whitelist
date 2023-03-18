@@ -27,6 +27,8 @@ namespace invision_whitelist
                 if (source == 0)
                 {
                     Debug.WriteLine("[Invision Whitelist] Updating whitelist...");
+                } else {
+                    Console.WriteLine($"[Invision Whitelist] {GetPlayerName(source.ToString())} is updating the whitelist...");
                 }
                 UpdateWhitelistedHexes();
             }), true);
