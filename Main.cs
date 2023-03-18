@@ -52,7 +52,6 @@ namespace invision_whitelist
             string rawFileContent = LoadResourceFile(GetCurrentResourceName(), "config.json");
             if (rawFileContent is null) return;
             WhitelistConfig config = JsonConvert.DeserializeObject<WhitelistConfig>(rawFileContent);
-            Debug.WriteLine(config.ToString());
             if (config.allowedGroupIds is null || config.apiToken is null || config.apiBaseURL is null || config.profileFieldName is null || config.profileFieldSubNode is null) return;
             communityURL = config.apiBaseURL;
             apiKey = config.apiToken;
