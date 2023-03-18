@@ -149,7 +149,7 @@ namespace invision_whitelist
             }
             // Set the whitelisted users
             whitelistedHexes = new HashSet<string>(steamHexes);
-            Debug.WriteLine($"^2Updated whitelisted users! There are {steamHexes.Count} whitelisted users. ^0");
+            Debug.WriteLine($"^2Updated whitelisted users! There are {whitelistedHexes.Count} whitelisted users. ^0");
         }
 
         /**
