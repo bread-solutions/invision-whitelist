@@ -74,7 +74,7 @@ namespace invision_whitelist
             {
                 // Makes a request to the Invision API for the first 500 users. We also use this to get the total number of users in the group and the ammount of pages.
                 RestClient restClient = new RestClient(communityURL);
-                RestRequest restRequest = (RestRequest)new RestRequest($"core/members?group={groupIds[i]}&perPage=500&key={apiKey}", Method.GET, DataFormat.Json).AddHeader("User-Agent", "WorldwideRP/1.0");
+                RestRequest restRequest = (RestRequest)new RestRequest($"core/members?group={groupIds[i]}&perPage=500&key={apiKey}", Method.GET, DataFormat.Json).AddHeader("User-Agent", "BreadSupply/1.0");
                 RestResponse restResponse = (RestResponse)await restClient.ExecuteAsync(restRequest);
 
                 if (restResponse.StatusCode == (HttpStatusCode)200)
@@ -89,7 +89,7 @@ namespace invision_whitelist
                     for (int z = 2; z <= formattedResponse.totalPages; z++)
                     {
                         // Nested request to get the rest of the users in the group
-                        RestRequest InternalRestRequest = (RestRequest)new RestRequest($"core/members?group={groupIds[i]}&perPage=500&page={z}&key={apiKey}", Method.GET, DataFormat.Json).AddHeader("User-Agent", "WorldwideRP/1.0");
+                        RestRequest InternalRestRequest = (RestRequest)new RestRequest($"core/members?group={groupIds[i]}&perPage=500&page={z}&key={apiKey}", Method.GET, DataFormat.Json).AddHeader("User-Agent", "BreadSupply/1.0");
                         RestResponse InternalRestResponse = (RestResponse)await restClient.ExecuteAsync(InternalRestRequest);
 
                         if (InternalRestResponse.StatusCode == (HttpStatusCode)200)
